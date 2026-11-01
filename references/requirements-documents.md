@@ -43,6 +43,15 @@ docs/prd/                       # relocatable via CLAUDE.md
 
 `overview.md` describes what the system is, which capabilities it offers to the outside, and the overall scope boundary. It does not describe product positioning or a target market.
 
+**Required sections, in this order:**
+- **What the System Is** — the system seen from outside: what it does, for whom.
+- **Capabilities** — what the system offers to the outside, and what the capabilities add up to. It does not repeat the README index: a second list of the same files drifts away from the first.
+- **Scope Boundary** — what the system as a whole is responsible for, with the out-of-scope part stated. Stating it is the cheapest defence against scope creep.
+
+**Optional:** **Actors** — who interacts with the system, and with what authority. Delete it when the capability documents cover their actors on their own.
+
+The overview is the one requirements document whose section set stays open: further sections may follow these, in no fixed order.
+
 Templates: `templates/prd-readme.md`, `templates/prd-overview.md`.
 
 ## 3. User Journeys

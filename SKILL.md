@@ -1,16 +1,7 @@
 ---
 name: document-standards
-description: Documentation standards for design documents, requirements documents and architecture decision records — path and language configuration, the rules common to every document type, and the entry point to each type's own standard. Load before creating or editing any document under the configured documentation paths.
-triggers:
-  - writing a design document
-  - editing a design document
-  - creating an architecture overview
-  - documenting a module design
-  - adding a module to the design docs
-  - reviewing documentation
-  - writing a requirements document
-  - writing an architecture decision record
-globs:
+description: Documentation standards for design documents, requirements documents and architecture decision records — path and language configuration, the rules common to every document type, and the entry point to each type's own standard. Load before creating or editing any document under the configured documentation paths. Use when writing or editing a design document, creating an architecture overview, documenting a module or adding one to the design docs, writing a requirements document, writing an architecture decision record, or reviewing documentation.
+paths:
   - "docs/design/**/*.md"
   - "docs/prd/**/*.md"
   - "docs/adr/**/*.md"
@@ -96,7 +87,7 @@ Documentation paths and language are declared in `CLAUDE.md` under a fixed headi
 - **The file registers public sources only.** The source column is a URL any reader can open. Material the project does not own but that is not public — another internal project's documents, a contract, a counterpart's interface agreement — is not registered here; a requirement that traces to such an authority names it in words, as the requirements standard describes.
 - **`REF-<slug>` names the source, is unique in the file, and is permanent.** The slug is lowercase kebab-case ASCII, like an ADR slug, and renaming it breaks every citation. One source, one entry: a version is a column, not a second row.
 - **A document cites a source once, at the first sentence that relies on it**, by identifier plus link; later mentions in the same document use the name alone.
-- **There is no per-document reference section, in any document type.** The citations are in the sentences that need them. A list of them at the end of the document restates the body, and it is the restatement that drifts when a sentence is rewritten; the fixed section sets reject such a section.
+- **There is no per-document reference section, in any document type.** The citations are in the sentences that need them. A list of them at the end of the document restates the body, and it is the restatement that drifts when a sentence is rewritten; every document type with a fixed section set rejects such a section.
 - **A citation of an unregistered identifier and an entry no document cites are both defects.** An uncited entry is an orphan, like a document absent from its index.
 
 **Examples convey intent, not runnability.**
@@ -141,13 +132,16 @@ presence and order, file naming, index coverage, status vocabulary, diagram
 bodies, the process metadata a document never carries, and whether every
 `REF-<slug>` citation resolves to an entry of the project references file that
 is itself cited. It reads the paths and the language from the `## Documentation` block of
-section 1, and skips a declared tree that does not exist.
+section 1, skips a declared tree that does not exist, and treats a configuration under
+which no tree exists, or a value that is not a single path, as a usage error (exit 2).
 
 **Running it is mandatory, not advisory.** After creating or editing any document
-under the configured paths, run it from the repository root and leave it at exit 0:
+under the configured paths, run it from the repository root and leave it at exit 0.
+The script lives in this skill's `scripts/` directory, wherever the skill is installed:
 
 ```bash
-python3 .claude/skills/document-standards/scripts/check_documents.py
+python3 ~/.claude/skills/document-standards/scripts/check_documents.py   # user-level install
+python3 .claude/skills/document-standards/scripts/check_documents.py    # repository-level install
 ```
 
 Every finding is printed as `path:line: what is wrong`. Fix the documents; do not
@@ -161,14 +155,15 @@ at all and whether it belongs to the project glossary or to a local one, whether
 normative sentence's literal scope is the one intended, whether a list is meant as
 a criterion or as an exhaustive set, whether a sentence that relies on an external
 source cites it, whether a cited source is one the reader would have attributed
-correctly unaided, whether a status entry carries an explanation it should not, and
+correctly unaided, whether a journey is a process the business actually runs, whether
+a status entry carries an explanation it should not, and
 whether a document still matches the code it asserts things about. It also does not render diagrams: it checks that a
 mermaid block has a type and a body, while the rendering rule in section 2 stays a
 step performed during the edit.
 
-`scripts/test_check_documents.py` is the checker's own planted-violation suite
-(`python3 .claude/skills/document-standards/scripts/test_check_documents.py`). A
-new rule in this standard earns a check there, or it is not enforced.
+`scripts/test_check_documents.py`, beside the checker, is its planted-violation
+suite, run the same way. A new rule in this standard earns a check there, or it is
+not enforced.
 
 ## 6. Common Checklist
 

@@ -190,7 +190,10 @@ class CheckerCase(unittest.TestCase):
             for path, content in files.items():
                 target = pathlib.Path(td) / path
                 target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_text(content, encoding="utf-8")
+                if isinstance(content, bytes):
+                    target.write_bytes(content)
+                else:
+                    target.write_text(content, encoding="utf-8")
             out, err = io.StringIO(), io.StringIO()
             with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
                 code = m.main(["--root", td])
@@ -544,11 +547,20 @@ class AdrTreeTests(CheckerCase):
                         "does not match adr-<slug>")
 
     def test_file_name_with_a_sequence_number(self):
-        self.assert_red({"docs/adr/adr-core-scope.md": None,
-                         "docs/adr/adr-core-scope-2.md": ADR_RECORD,
+        second = ADR_RECORD.replace("# core owns registration", "# second scope decision")
+        self.assert_red({"docs/adr/adr-core-scope-2.md": second,
                          "docs/adr/README.md":
-                         ADR_README.replace("adr-core-scope.md", "adr-core-scope-2.md")},
+                         ADR_README.replace(
+                             "| [core owns registration](adr-core-scope.md) |",
+                             "| [core owns registration](adr-core-scope.md) |\n"
+                             "| [second scope decision](adr-core-scope-2.md) |")},
                         "sequence number")
+
+    def test_number_inside_a_name_is_not_a_sequence(self):
+        record = ADR_RECORD.replace("# core owns registration", "# TLS 1.3 only")
+        self.assert_green({"docs/adr/adr-tls-1-3.md": record,
+                           "docs/adr/README.md":
+                           ADR_README + "| [TLS 1.3 only](adr-tls-1-3.md) |\n"})
 
     def test_index_row_uses_the_record_title(self):
         self.assert_red({"docs/adr/README.md":
@@ -927,6 +939,13 @@ class RequirementsTreeTests(CheckerCase):
     def test_conforming_requirements_tree_passes(self):
         self.assert_green(base=PRD_FILES)
 
+    def test_index_groups_may_be_h2(self):
+        self.assert_green({"docs/prd/README.md":
+                           PRD_FILES["docs/prd/README.md"]
+                           .replace("### Journeys", "## Journeys")
+                           .replace("### Capabilities", "## Capabilities")},
+                          base=PRD_FILES)
+
     def test_local_glossary_section_in_its_seat(self):
         glossary = """## Glossary
 
@@ -1078,6 +1097,359 @@ class ReferencesTests(CheckerCase):
         self.assert_red({self.REFS: ZH_FILES[self.REFS]
                          + "| REF-gadgetlib | gadgetlib | 宿主垫片 | https://example.org/gadgetlib | — |\n"},
                         "cited by no document", base=ZH_FILES)
+
+
+CLAUDE_MD_WITH_FENCED_EXAMPLE = """# Project
+
+The block looks like this:
+
+```markdown
+## Documentation
+
+- design: docs/example
+- language: zh-CN
+```
+
+## Documentation
+
+- design: docs/design
+- adr: docs/adr
+- glossary: docs/glossary.md
+- references: docs/references.md
+- language: en
+"""
+
+
+class ConfigurationTests(CheckerCase):
+    def test_fenced_example_block_is_not_the_configuration(self):
+        self.assert_green({"CLAUDE.md": CLAUDE_MD_WITH_FENCED_EXAMPLE})
+
+    def test_value_with_trailing_text_is_a_usage_error(self):
+        code, report = self.run_on({"CLAUDE.md": CLAUDE_MD.replace(
+            "- design: docs/design", "- design: docs/design (design docs)")})
+        self.assertEqual(code, 2, report)
+        self.assertIn("not a single path", report)
+
+    def test_no_tree_at_all_is_a_usage_error(self):
+        code, report = self.run_on({"CLAUDE.md": CLAUDE_MD
+                                    .replace("docs/design", "docs/nowhere")
+                                    .replace("docs/adr", "docs/nowhere-either")})
+        self.assertEqual(code, 2, report)
+        self.assertIn("no documentation tree found", report)
+
+    def test_failure_summary_names_the_installed_skill_directory(self):
+        skill_dir = os.path.dirname(os.path.dirname(os.path.abspath(m.__file__)))
+        code, report = self.run_on({"docs/design/modules/design-core.md":
+                                    MODULE.replace("### Non-Responsibilities\n\n", "")})
+        self.assertEqual(code, 1, report)
+        self.assertIn(skill_dir, report)
+
+
+class ParsingTests(CheckerCase):
+    def test_code_reference_with_a_directory_prefix(self):
+        self.assert_red({"docs/design/modules/design-core.md":
+                         MODULE.replace("`Register` is stable",
+                                        "`Register` (pkg/registry.go:42) is stable")},
+                        "code reference with a line number")
+
+    def test_code_reference_with_a_hash_line_anchor_and_directory(self):
+        self.assert_red({"docs/design/modules/design-core.md":
+                         MODULE.replace("`Register` is stable",
+                                        "`Register` (internal/core/registry.go#L42) is stable")},
+                        "code reference with a line number")
+
+    def test_heading_anchor_is_not_a_line_reference(self):
+        self.assert_green({"docs/design/modules/design-core.md":
+                           MODULE.replace("Nothing below it.",
+                                          "Nothing below it; see "
+                                          "[the contract](design-core.md#3).")})
+
+    def test_single_line_diagram_with_content_passes(self):
+        self.assert_green({"docs/design/architecture.md":
+                           ARCHITECTURE.replace("graph TD\n  host --> core",
+                                                "graph LR; host-->core")})
+
+    def test_fence_closes_only_on_its_own_delimiter(self):
+        text = "# T\n\n## S\n\nprose\n\n```mermaid\ngraph TD\n~~~\n  a --> b\n```\n"
+        section = [s for s in m.parse_sections(text) if s.title == "S"][0]
+        self.assertEqual(section.fences()[0][2], ["graph TD", "~~~", "  a --> b"])
+
+    def test_bom_does_not_hide_the_title(self):
+        self.assert_green({"docs/design/modules/design-core.md": "\ufeff" + MODULE})
+
+    def test_non_utf8_file_is_a_finding_not_a_crash(self):
+        self.assert_red({"docs/design/modules/design-core.md":
+                         MODULE.encode("utf-8").replace(b"Owns registration.",
+                                                        b"Owns registration \xe9.")},
+                        "not valid UTF-8")
+
+    def test_chinese_task_marker_needs_a_boundary(self):
+        self.assert_green({"docs/design/modules/design-core.md":
+                           ZH_FILES["docs/design/modules/design-core.md"]
+                           .replace("`Register` 在大版本内保持稳定。",
+                                    "`Register` 在大版本内保持稳定，其语义待定义于契约节。")},
+                          base=ZH_FILES)
+
+    def test_chinese_task_marker_alone_is_reported(self):
+        self.assert_red({"docs/design/modules/design-core.md":
+                         ZH_FILES["docs/design/modules/design-core.md"]
+                         .replace("`Register` 在大版本内保持稳定。", "`Register` 的语义待定。")},
+                        "project-management marker", base=ZH_FILES)
+
+
+class SkippedDocumentTests(CheckerCase):
+    def test_adr_readme_gets_the_common_checks(self):
+        self.assert_red({"docs/adr/README.md": ADR_README + "\n- **Author**: me\n"},
+                        "process metadata field")
+
+    def test_misnamed_record_still_gets_its_content_checked(self):
+        self.assert_red({"docs/adr/adr-scope-2026-01-01.md":
+                         ADR_RECORD + "\n- **Status**: Accepted\n"},
+                        "status field")
+
+    def test_overview_heading_in_the_other_language(self):
+        self.assert_red({"docs/prd/overview.md":
+                         PRD_FILES["docs/prd/overview.md"].replace("## Capabilities", "## 能力")},
+                        "is written in zh-CN", base=PRD_FILES)
+
+
+ASPECT = """# core storage
+
+## Core Data Structures
+
+A map from component name to component.
+"""
+ASPECT_INDEX_ROW = "| [core storage](modules/design-core-storage.md) | the storage aspect of core |\n"
+
+
+class StatusVocabularyTests(CheckerCase):
+    MOD = "docs/design/modules/design-core.md"
+
+    def test_unimplemented_is_not_implemented(self):
+        self.assert_red({self.MOD: MODULE.replace("| registration | Not implemented | — |",
+                                                  "| registration | Unimplemented | — |")},
+                        "carries none of")
+
+    def test_status_word_in_the_capability_cell_is_not_the_status(self):
+        self.assert_red({self.MOD: MODULE.replace("| registration | Not implemented | — |",
+                                                  "| Not implemented warning | Implemented | — |")},
+                        "no code anchor")
+
+    def test_qualified_status_value_is_refused(self):
+        self.assert_red({self.MOD: MODULE.replace("| registration | Not implemented | — |",
+                                                  "| registration | Implemented (partially) | `a.go` `F` |")},
+                        "carries none of")
+
+    def test_status_table_without_leading_pipes(self):
+        self.assert_green({self.MOD: MODULE.replace(
+            "| Capability | Status | Code |\n|---|---|---|\n| registration | Not implemented | — |",
+            "Capability | Status | Code\n---|---|---\nregistration | Not implemented | —")})
+
+    def test_second_status_table_header_is_not_an_entry(self):
+        self.assert_green({self.MOD: MODULE
+                           + "\n| Capability | Status | Code |\n|---|---|---|\n"
+                             "| assembly | Not implemented | — |\n"})
+
+
+class AdrIndexFormTests(CheckerCase):
+    def test_list_form_index_row_uses_the_record_title(self):
+        self.assert_red({"docs/adr/README.md":
+                         "# Architecture Decision Records\n\nRecords.\n\n## Core\n\n"
+                         "- [a registry lives in core](adr-core-scope.md)\n"},
+                        "does not use the record's own title")
+
+    def test_dot_slash_link_does_not_escape_the_column_check(self):
+        self.assert_red({"docs/adr/README.md":
+                         "# Architecture Decision Records\n\nRecords.\n\n## Core\n\n"
+                         "| Record | Date |\n|---|---|\n"
+                         "| [core owns registration](./adr-core-scope.md) | 2026-01-02 |\n"},
+                        "date or status column")
+
+
+class AspectSplitTests(CheckerCase):
+    ASPECT_PATH = "docs/design/modules/design-core-storage.md"
+
+    def test_aspect_split_is_not_a_module_document(self):
+        self.assert_green({self.ASPECT_PATH: ASPECT,
+                           "docs/design/README.md": DESIGN_README + ASPECT_INDEX_ROW})
+
+    def test_aspect_row_in_the_architecture_roll_up_is_refused(self):
+        self.assert_red({self.ASPECT_PATH: ASPECT,
+                         "docs/design/README.md": DESIGN_README + ASPECT_INDEX_ROW,
+                         "docs/design/architecture.md": ARCHITECTURE
+                         + "| [core storage](modules/design-core-storage.md) | Not implemented |\n"},
+                        "aspect document")
+
+    def test_numeric_sibling_is_not_an_aspect(self):
+        code, report = self.run_on({
+            "docs/design/modules/design-core-2.md": MODULE,
+            "docs/design/README.md": DESIGN_README
+            + "| [core 2](modules/design-core-2.md) | duplicate |\n",
+        })
+        self.assertEqual(code, 1, report)
+        self.assertIn("sequence number", report)
+        self.assertNotIn("aspect document", report)
+
+    def test_aspect_document_absent_from_the_index_is_an_orphan(self):
+        self.assert_red({self.ASPECT_PATH: ASPECT}, "absent from the design index")
+
+    def test_aspect_status_entries_are_still_checked(self):
+        self.assert_red({self.ASPECT_PATH: ASPECT
+                         + "\n## Implementation Status\n\n| Capability | Status | Code |\n"
+                           "|---|---|---|\n| storage | Implemented | — |\n",
+                         "docs/design/README.md": DESIGN_README + ASPECT_INDEX_ROW},
+                        "no code anchor")
+
+
+class ParserRobustnessTests(CheckerCase):
+    """Inputs a real markdown file can contain, which the checker must read
+    the way a renderer does."""
+
+    MOD = "docs/design/modules/design-core.md"
+    ARCH = "docs/design/architecture.md"
+
+    def test_config_path_with_a_trailing_slash(self):
+        self.assert_green({"CLAUDE.md": CLAUDE_MD
+                           .replace("docs/design\n", "docs/design/\n")
+                           .replace("docs/adr\n", "docs/adr/\n")})
+
+    def test_dotfile_beside_a_module_is_ignored(self):
+        self.assert_green({"docs/design/modules/._design-core.md": "junk\n"})
+
+    def test_table_separator_with_single_hyphens(self):
+        self.assert_green({self.MOD: MODULE.replace(
+            "| Capability | Status | Code |\n|---|---|---|",
+            "| Capability | Status | Code |\n|-|-|-|")})
+
+    def test_multilevel_numbered_heading(self):
+        self.assert_green({self.MOD: MODULE.replace(
+            "### Non-Responsibilities", "### 1.1 Non-Responsibilities")})
+
+    def test_heading_ignores_the_space_between_cjk_and_latin(self):
+        self.assert_green({"docs/design/modules/design-core.md":
+                           ZH_FILES["docs/design/modules/design-core.md"].replace(
+                               "## 实现状态", """
+## UML图
+
+组件之间的引用关系如下。
+
+```mermaid
+classDiagram
+  class Registry {
+    +Register()
+  }
+```
+
+## 实现状态""")},
+                          base=ZH_FILES)
+
+    def test_section_spans_its_subsections(self):
+        self.assert_green({self.ARCH: ARCHITECTURE.replace(
+            "A single process.\n\n```mermaid\ngraph TD\n  process --> database\n```",
+            "A single process.\n\n### Production\n\nOne replica per region.\n\n"
+            "```mermaid\ngraph TD\n  process --> database\n```")})
+
+    def test_inline_code_comment_marker_does_not_swallow_the_document(self):
+        self.assert_green({self.MOD: MODULE.replace(
+            "Owns registration.",
+            "Owns registration; a template comment opens with `<!--`.")
+            + "\n<!-- reviewed -->\n"})
+
+    def test_data_field_named_like_metadata_is_content(self):
+        self.assert_green({self.MOD: MODULE.replace(
+            "## Implementation Status",
+            "## Core Data Structures\n\n"
+            "- **Version**: the optimistic-lock counter\n"
+            "- **Owner**: the tenant that registered the component\n\n"
+            "## Implementation Status")})
+
+    def test_adr_field_with_a_content_value_is_not_a_status(self):
+        self.assert_green({"docs/adr/adr-core-scope.md": ADR_RECORD.replace(
+            "Registration is uniform.", "Registration is uniform.\n\n- **State**: kept in Redis.")})
+
+    def test_chinese_sentence_about_replacement_is_not_supersession(self):
+        self.assert_green({"docs/adr/adr-core-scope.md":
+                           ZH_FILES["docs/adr/adr-core-scope.md"].replace(
+                               "宿主需要一个统一的组件注册位置。",
+                               "宿主需要一个统一的组件注册位置。\n\n"
+                               "已被事件推送取代，因此改用轮询。")},
+                          base=ZH_FILES)
+
+    def test_todo_adjacent_to_chinese_is_still_a_marker(self):
+        self.assert_red({"docs/design/modules/design-core.md":
+                         ZH_FILES["docs/design/modules/design-core.md"].replace(
+                             "拥有注册。", "拥有注册，此处TODO补充边界。")},
+                        "project-management marker", base=ZH_FILES)
+
+    def test_reference_citation_adjacent_to_chinese_is_counted(self):
+        self.assert_green({"docs/design/architecture.md":
+                           ZH_FILES["docs/design/architecture.md"].replace(
+                               "（[REF-widgetlib](../references.md)）", "，依据REF-widgetlib 实现")},
+                          base=ZH_FILES)
+
+
+class RegressionTests(CheckerCase):
+    """Defects the fix round itself introduced, each reproduced first."""
+
+    ADR = "docs/adr/adr-core-scope.md"
+    MOD = "docs/design/modules/design-core.md"
+
+    def test_status_field_without_a_verdict_verb(self):
+        self.assert_red({self.ADR: ADR_RECORD.replace(
+            "## Context\n", "## Context\n\n- **Status**: Draft\n")}, "status field")
+
+    def test_accepted_field_carrying_a_date(self):
+        self.assert_red({self.ADR: ADR_RECORD.replace(
+            "## Context\n", "## Context\n\n- **Accepted**: 2026-01-02\n")}, "status field")
+
+    def test_chinese_status_field_with_a_plain_value(self):
+        self.assert_red({"docs/adr/adr-core-scope.md":
+                         ZH_FILES["docs/adr/adr-core-scope.md"].replace(
+                             "宿主需要一个统一的组件注册位置。",
+                             "宿主需要一个统一的组件注册位置。\n\n- **状态**：废弃")},
+                        "status field", base=ZH_FILES)
+
+    def test_chinese_marker_before_ascii_punctuation(self):
+        self.assert_red({"docs/design/modules/design-core.md":
+                         ZH_FILES["docs/design/modules/design-core.md"].replace(
+                             "拥有注册。", "待办: 补测试。")},
+                        "project-management marker", base=ZH_FILES)
+
+    def test_chinese_marker_before_a_full_width_bracket(self):
+        self.assert_red({"docs/design/modules/design-core.md":
+                         ZH_FILES["docs/design/modules/design-core.md"].replace(
+                             "拥有注册。", "待定（暂缓）。")},
+                        "project-management marker", base=ZH_FILES)
+
+    def test_line_range_reference_is_still_a_line_reference(self):
+        self.assert_red({self.MOD: MODULE.replace(
+            "`Register` is stable", "`Register` (pkg/registry.go:42-45) is stable")},
+            "code reference with a line number")
+
+    def test_comment_after_a_multi_backtick_span_is_stripped(self):
+        self.assert_green({self.MOD: MODULE.replace(
+            "Owns registration.",
+            "Owns registration; `` ` `` is a literal backtick. <!-- TODO: finish -->")})
+
+    def test_english_sentence_about_replacement_is_not_supersession(self):
+        self.assert_green({self.ADR: ADR_RECORD.replace(
+            "A host needs one place to register components.",
+            "A host needs one place to register components.\n\n"
+            "Superseded by event push, so polling replaced it.")})
+
+    def test_diagram_without_prose_is_reported_once(self):
+        code, report = self.run_on({self.MOD: MODULE.replace(
+            "## Implementation Status",
+            "## UML Diagrams\n\n### Component Diagram\n\n```mermaid\nclassDiagram\n"
+            "  class Registry {\n    +Register()\n  }\n```\n\n## Implementation Status")})
+        self.assertEqual(code, 1, report)
+        self.assertEqual(report.count("holds a diagram and no prose"), 1, report)
+
+    def test_second_status_table_body_is_checked(self):
+        self.assert_red({self.MOD: MODULE
+                         + "\n| Capability | Status | Code |\n|---|---|---|\n"
+                           "| assembly | Implemented | — |\n"},
+                        "no code anchor")
 
 
 if __name__ == "__main__":
