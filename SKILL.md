@@ -127,7 +127,8 @@ Documentation paths and language are declared in `CLAUDE.md` under a fixed headi
 
 `scripts/check_documents.py` checks the structural half of this standard: section
 presence and order, the Overview's Core Concepts and Design Mainline when the
-architecture rolls up more than one top-level module, file naming, index coverage,
+architecture rolls up more than one top-level module, the placement of Worked
+Example and State at a Glance when a module carries them, file naming, index coverage,
 status vocabulary, diagram bodies, glossary columns and every entry's English
 counterpart, the process metadata a document never carries, and whether every
 `REF-<slug>` citation resolves to an entry of the project references file that
@@ -161,18 +162,21 @@ source cites it, whether a cited source is one the reader would have attributed
 correctly unaided, whether a journey is a process the business actually runs, whether
 a status entry carries an explanation it should not, whether a concept section
 states relationships rather than definitions beyond the second-glossary table
-guard, whether a module opening gives a real mental model, whether a worked example is
-concrete enough to follow, whether a reading guide matches the document, whether a
-state table's plain-language meanings are right, whether a project term is linked
-at first use, whether a rationale link sits at the first sentence that needs it,
-whether Design Mainline's mechanisms map to the sections it names, and
-whether a document still matches the code it asserts things about. It also does not render diagrams: it checks that a
+guard, whether a module opening gives a real mental model, whether a long module
+carries a Reading guide or a state machine carries State at a Glance, whether a
+worked example is concrete enough to follow, whether a reading guide matches the
+document, whether a state table's plain-language meanings are right, whether a
+project term is linked at first use, whether a rationale link sits at the first
+sentence that needs it, whether Design Mainline's mechanisms map to the sections
+it names, and whether a document still matches the code it asserts things about.
+It also does not render diagrams: it checks that a
 mermaid block has a type and a body, while the rendering rule in section 2 stays a
 step performed during the edit.
 
 `scripts/test_check_documents.py`, beside the checker, is its planted-violation
-suite, run the same way. A new rule in this standard earns a check there, or it is
-not enforced.
+suite, run the same way. A mechanically checkable rule earns a check there, or it
+is not enforced; a judgement rule goes on the review checklist and in `What it
+does not check`.
 
 ## 6. Common Checklist
 

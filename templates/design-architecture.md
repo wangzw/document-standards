@@ -17,9 +17,11 @@ nothing else is incomplete.
 
 <!--
 Required when the Implementation Status table lists more than one top-level
-module. Core Concepts is the first H3 of the Overview. Link the project
-glossary for each term's definition; never restate one. Reference the ADR
-that records a decision; never restate its rationale.
+module. Core Concepts is the first H3 of the Overview; a short lead paragraph
+may precede it. A relationship table is allowed; a definition table is not.
+Link the project glossary for each term's definition; never restate one, and
+the link may point at the glossary file. Reference the ADR that records a
+decision; never restate its rationale.
 -->
 ### Core Concepts
 
@@ -40,7 +42,8 @@ flowchart TB
 ### Design Mainline
 
 <The problems the design must solve, the mechanism for each, and where the
-mechanism is specified.>
+mechanism is specified. The table carries at least one data row; the three
+columns are required.>
 
 | Problem | Mechanism | Where it is specified |
 |---|---|---|

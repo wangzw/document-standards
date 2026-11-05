@@ -89,13 +89,16 @@ classDiagram
 
 ## Core Data Structures
 
-<!-- Applicable only: keep in a module with a state machine. Delete otherwise. -->
+<!-- Applicable only: keep in a module with a state machine. Delete otherwise.
+One row per state; merge substate values into their parent row and explain
+them, unless the module treats them as first-class states. Chinese column
+names: 状态 | 一句话含义 | 组件在做什么 | 直觉画面. -->
 ### State at a Glance
 
 <The closed value set states which values exist; this table states what each
 value means in operation.>
 
-| State | What it means | What the component is doing | What to picture |
+| State | What it means | What the component is doing | Mental image |
 |---|---|---|---|
 | <state> | <one sentence> | <activity> | <image> |
 
@@ -106,7 +109,9 @@ Complexity analysis is required for performance-sensitive algorithms and is
 not required for procedural flows.
 -->
 
-<!-- Applicable only: delete when the module has no core flow a reader must internalize. -->
+<!-- Applicable only: delete when the module has no core flow a reader must internalize.
+Place this at the start of Core Algorithms and Flows, before the exhaustive
+tables, and point to it from the Reading guide. Chinese heading: 走查. -->
 ### Worked Example
 
 <One core flow a reader must internalize: the initial state, the event or

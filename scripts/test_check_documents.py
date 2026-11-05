@@ -674,6 +674,128 @@ flowchart TB
         self.assert_red({"docs/design/architecture.md": broken},
                         "comes before Core Concepts", base=TWO_MODULE_FILES)
 
+    def test_optional_core_concepts_in_single_module_passes(self):
+        block = """
+### Core Concepts
+
+The core module is the system's concept.
+
+```mermaid
+flowchart TB
+    core[core]
+```
+
+The map shows the module.
+"""
+        files = dict(BASELINE)
+        files["docs/design/architecture.md"] = ARCHITECTURE.replace(
+            "## Module Dependency Graph", block + "\n## Module Dependency Graph")
+        self.assert_green(files)
+
+    def test_optional_core_concepts_in_single_module_with_second_glossary(self):
+        block = """
+### Core Concepts
+
+The core module is the system's concept.
+
+```mermaid
+flowchart TB
+    core[core]
+```
+
+| Term | Definition |
+|---|---|
+| core | the core |
+"""
+        files = dict(BASELINE)
+        files["docs/design/architecture.md"] = ARCHITECTURE.replace(
+            "## Module Dependency Graph", block + "\n## Module Dependency Graph")
+        self.assert_red(files, "second glossary table")
+
+    def test_concept_definition_table(self):
+        broken = TWO_MODULE_FILES["docs/design/architecture.md"].replace(
+            "The map shows the only relationship between the two concepts.",
+            "The map shows the only relationship between the two concepts.\n\n"
+            "| Concept | Definition |\n|---|---|\n| core | the core |")
+        self.assert_red({"docs/design/architecture.md": broken},
+                        "second glossary table", base=TWO_MODULE_FILES)
+
+    def test_design_mainline_with_an_empty_table(self):
+        broken = TWO_MODULE_FILES["docs/design/architecture.md"].replace(
+            DESIGN_MAINLINE_BLOCK,
+            """
+### Design Mainline
+
+| Problem | Mechanism | Where it is specified |
+|---|---|---|
+""")
+        self.assert_red({"docs/design/architecture.md": broken},
+                        "carries no data row", base=TWO_MODULE_FILES)
+
+    def test_second_design_mainline_under_cross_cutting(self):
+        broken = TWO_MODULE_FILES["docs/design/architecture.md"].replace(
+            "## Cross-Cutting Design\n\n### Error Model",
+            "## Cross-Cutting Design\n\n### Design Mainline\n\nAgain.\n\n### Error Model")
+        self.assert_red({"docs/design/architecture.md": broken},
+                        "second Design Mainline subsection", base=TWO_MODULE_FILES)
+
+    def test_module_documents_without_status_rows_do_not_trigger(self):
+        files = dict(BASELINE)
+        files["docs/design/modules/design-host.md"] = HOST_MODULE
+        files["docs/design/README.md"] = (
+            DESIGN_README + "| [host](modules/design-host.md) | the host |\n")
+        code, report = self.run_on(files)
+        self.assertEqual(code, 1, report)
+        self.assertIn("has no row for", report)
+        self.assertNotIn("no Core Concepts subsection", report)
+
+    def test_duplicate_core_concepts_do_not_false_report_order(self):
+        core, mainline = CORE_CONCEPTS_BLOCK.split("### Design Mainline", 1)
+        mainline = "### Design Mainline" + mainline
+        broken = TWO_MODULE_FILES["docs/design/architecture.md"].replace(
+            CORE_CONCEPTS_BLOCK, core + mainline + core)
+        code, report = self.run_on({"docs/design/architecture.md": broken},
+                                   base=TWO_MODULE_FILES)
+        self.assertEqual(code, 1, report)
+        self.assertIn("second Core Concepts subsection", report)
+        self.assertNotIn("comes before Core Concepts", report)
+
+
+class ModuleReadabilityTests(CheckerCase):
+    def test_worked_example_outside_core_algorithms(self):
+        broken = MODULE.replace(
+            "## External Interface Contract",
+            "### Worked Example\n\nA trace.\n\n## External Interface Contract")
+        self.assert_red({"docs/design/modules/design-core.md": broken},
+                        "must sit under 'Core Algorithms and Flows'")
+
+    def test_state_at_a_glance_outside_core_data_structures(self):
+        broken = MODULE.replace(
+            "## External Interface Contract",
+            "### State at a Glance\n\nA table.\n\n## External Interface Contract")
+        self.assert_red({"docs/design/modules/design-core.md": broken},
+                        "must sit under 'Core Data Structures'")
+
+    def test_module_readability_sections_in_place(self):
+        block = """## Core Data Structures
+
+### State at a Glance
+
+| State | What it means | What the component is doing | Mental image |
+|---|---|---|---|
+| idle | nothing runs | waiting | a quiet room |
+
+## Core Algorithms and Flows
+
+### Worked Example
+
+A trace.
+
+"""
+        broken = MODULE.replace("## Implementation Status",
+                                block + "## Implementation Status")
+        self.assert_green({"docs/design/modules/design-core.md": broken})
+
 
 class AdrTreeTests(CheckerCase):
     def test_status_section_is_refused(self):
