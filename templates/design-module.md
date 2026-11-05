@@ -90,17 +90,20 @@ classDiagram
 ## Core Data Structures
 
 <!-- Applicable only: keep in a module with a state machine. Delete otherwise.
-One row per state; merge substate values into their parent row and explain
-them, unless the module treats them as first-class states. Chinese column
-names: 状态 | 一句话含义 | 组件在做什么 | 直觉画面. -->
+The third column names the actor -- the component itself or the entity it
+manages -- and does not repeat the first column. Name the actor in the header
+when it is the same for every row. One row per state; merge substate values
+into their parent row and explain them, unless the module treats them as
+first-class states. Keep the row to one sentence and list many substates after
+a colon. Chinese column names: 状态 | 一句话含义 | 当前动作 | 直觉画面. -->
 ### State at a Glance
 
 <The closed value set states which values exist; this table states what each
 value means in operation.>
 
-| State | What it means | What the component is doing | Mental image |
+| State | What it means | What is happening | Mental image |
 |---|---|---|---|
-| <state> | <one sentence> | <activity> | <image> |
+| <state> | <one sentence> | <action> | <image> |
 
 ## Core Algorithms and Flows
 

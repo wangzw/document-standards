@@ -18,9 +18,9 @@ nothing else is incomplete.
 <!--
 Required when the Implementation Status table lists more than one top-level
 module. Core Concepts is the first H3 of the Overview; a short lead paragraph
-may precede it. A relationship table is allowed; a definition table is not.
-Link the project glossary for each term's definition; never restate one, and
-the link may point at the glossary file. Reference the ADR that records a
+may precede it, and its absence is not a defect. A relationship table is
+allowed; a definition table is not. Link the project glossary once for the
+terms' definitions; never restate one. Reference the ADR that records a
 decision; never restate its rationale.
 -->
 ### Core Concepts

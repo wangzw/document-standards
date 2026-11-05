@@ -32,6 +32,7 @@ Documentation paths and language are declared in `CLAUDE.md` under a fixed headi
 - Read this block before creating or editing any document. A missing key takes its default: `design` → `docs/design`, `requirements` → `docs/prd`, `adr` → `docs/adr`, `glossary` → `docs/glossary.md`, `references` → `docs/references.md`.
 - Resolve the document language in this order: the `language` key; the language of the documents already in the target directory; otherwise **ask the user**. All three inconclusive means ask — never pick a language silently.
 - **Project-wide language rules outrank the `language` key.** Where the project already fixes the language of a directory, that rule wins and a `language` declaration never licenses a violation of it.
+- **Canonical section and column names are listed in both supported languages.** The non-English names in this standard and its templates are identifiers the checker matches when a project sets that language; they are not a translation of the prose.
 
 ## 2. Rules Common to Every Document
 
@@ -164,12 +165,13 @@ a status entry carries an explanation it should not, whether a concept section
 states relationships rather than definitions beyond the second-glossary table
 guard, whether a module opening gives a real mental model, whether a long module
 carries a Reading guide or a state machine carries State at a Glance, whether a
-worked example is concrete enough to follow, whether a reading guide matches the
-document, whether a state table's plain-language meanings are right, whether a
-project term is linked at first use, whether a rationale link sits at the first
-sentence that needs it, whether Design Mainline's mechanisms map to the sections
-it names, and whether a document still matches the code it asserts things about.
-It also does not render diagrams: it checks that a
+worked example is concrete enough to follow, whether a reading guide's order
+matches the heading order and its section names resolve, whether a state table's
+third column names the actor without repeating the first column and its substate
+meanings are sufficient, whether a project term is linked at first use, whether a
+rationale link sits at the first sentence that needs it, whether Design Mainline's
+mechanisms map to the sections it names, and whether a document still matches the
+code it asserts things about. It also does not render diagrams: it checks that a
 mermaid block has a type and a body, while the rendering rule in section 2 stays a
 step performed during the edit.
 
