@@ -8,9 +8,22 @@ the rest.
 
 The slug is lowercase kebab-case, matches the module's directory or package
 name in the code, and never changes.
+
+Module in context and Reading guide are prose before the fixed sections, not
+headings: the fixed order starts at Responsibilities. Keep Reading guide only
+when the document is long enough that it cannot be read linearly.
 -->
 
 # <Module name>
+
+<Module in context: where this module sits in the system, what it owns, what
+it does not own, and the one-sentence mental model a reader should hold
+before the responsibility list.>
+
+<!-- Keep only when the document is long enough that it cannot be read
+linearly; delete otherwise. -->
+<Reading guide: which sections a first reader takes in order, which are
+reference, and whether the race cases are a final self-check.>
 
 ## Responsibilities
 
@@ -76,6 +89,16 @@ classDiagram
 
 ## Core Data Structures
 
+<!-- Applicable only: keep in a module with a state machine. Delete otherwise. -->
+### State at a Glance
+
+<The closed value set states which values exist; this table states what each
+value means in operation.>
+
+| State | What it means | What the component is doing | What to picture |
+|---|---|---|---|
+| <state> | <one sentence> | <activity> | <image> |
+
 ## Core Algorithms and Flows
 
 <!--
@@ -83,6 +106,12 @@ Complexity analysis is required for performance-sensitive algorithms and is
 not required for procedural flows.
 -->
 
+<!-- Applicable only: delete when the module has no core flow a reader must internalize. -->
+### Worked Example
+
+<One core flow a reader must internalize: the initial state, the event or
+call sequence, and the persisted state after each step. A sequence diagram
+shows message order; this trace shows what the persisted state becomes.>
 <!-- Applicable only: delete when the module has no non-trivial failure behaviour. -->
 ## Error and Failure Semantics
 

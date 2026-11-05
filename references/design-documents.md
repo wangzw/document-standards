@@ -4,6 +4,8 @@ Read together with `SKILL.md`, whose common rules apply in full and are not repe
 
 **The premise for this document type**: a design document is the *final design conclusion*, not a design log. Alternatives considered, the choice made and the reasoning behind it belong to the ADR; the design document carries only the reference.
 
+**The reader this standard writes for**: a senior engineer who has not read the code. A design document must let that reader build the mental model before the exhaustive rules, without becoming a second-person tutorial and without recording the design process. The Overview and the module's opening carry that model; the fixed sections that follow are the reference a reviewer uses to verify it.
+
 ---
 
 ## 1. Layout and Naming
@@ -56,7 +58,9 @@ Templates: `templates/design-readme.md` and `templates/design-module-index.md`.
 The high-level view of the whole system.
 
 **Required sections:**
-- **Overview** — the system's shape and its decomposition into modules.
+- **Overview** — the system's shape and its decomposition into modules. It carries the reader from the concepts to the mainline before the exhaustive rules:
+  - **Core Concepts** — the first H3 of the Overview, required when the Implementation Status roll-up lists more than one top-level module. It states, for each concept a reader must hold to follow the document, how it relates to the others, its lifecycle, and what it survives; it carries a Mermaid concept map and the prose that states the constraints the map cannot show. A term registered in the project glossary is linked, never redefined; a decision is referenced by ADR id, never restated. A table carrying the project glossary's term and definition columns is a second glossary and is refused.
+  - **Design Mainline** — required under the same trigger, after Core Concepts. A `Problem | Mechanism | Where it is specified` table (中文 `问题 | 机制 | 展开位置`) states the problems the design must solve and the mechanism that solves each, so the reader knows where each thread continues.
 - **Module dependency graph** — mandatory diagram.
 - **Logical deployment architecture** — mandatory diagram.
 - **Cross-cutting design** — the concerns no single module owns: error model, authentication and authorization boundaries, data consistency and transaction boundaries, concurrency model, failure and degradation behaviour, observability, performance and capacity targets, security boundaries. **The criterion is the phrase before the list, not the list.** A concern no single module owns earns a heading whether or not it is named above; a named one that genuinely does not exist in the system is omitted. These are the concerns most systems have, not a set to be satisfied.
@@ -85,6 +89,15 @@ Fixed section order, so modules can be read against each other and checked mecha
 9. **Concurrency and transaction boundaries** — when applicable.
 10. **Extension points** — when applicable.
 11. **Implementation status**.
+
+Within that order, two opening paragraphs and two H3s carry the reader's path:
+
+- **Module in context** — a short paragraph after the H1 and before `Responsibilities`. It states where the module sits in the system, what it owns, what it does not own, and the one-sentence mental model a reader should hold before the responsibility list. It is prose, not a new section.
+- **Reading guide** — a short paragraph immediately after Module in context, kept only when the document is long enough that it cannot be read linearly. It states which sections a first reader takes in order, which are reference, and whether the race cases are a final self-check.
+- **Worked Example** — an H3 under Core Algorithms and Flows. For each core flow a reader must internalize, give one concrete trace: the initial state, the event or call sequence, and the persisted state after each step. A protocol sequence diagram shows message order; the worked example shows what the persisted state becomes.
+- **State at a Glance** — an H3 under Core Data Structures in a module with a state machine. A table with `State | What it means | What the component is doing | What to picture`, in addition to the closed value set. The closed set answers which values exist; this table answers what each value means.
+
+**Reader-facing references.** Across both architecture and module documents, a term registered in the project glossary is linked the first time the document uses it; the document does not restate the definition. A non-obvious choice links its ADR at the first sentence that relies on it, not at the end of the section.
 
 The fixed order binds every module document, whether it sits flat under `modules/` or inside a module subdirectory. A sub-module document is a module document like any other and carries the whole order. The `README.md` of a module subdirectory is an index, not a module document, and follows section 2 instead.
 
@@ -139,4 +152,7 @@ The common checklist in `SKILL.md` applies as well.
 - [ ] Every implementation-status entry that claims implementation has a code anchor, and the entry states the status and no explanation
 - [ ] Status detail appears only in the document it belongs to; `architecture.md` carries one line per top-level module, a module subdirectory's `README.md` one line per sub-module
 - [ ] Every entry point appears in the tree's README index exactly once; every file appears in its module subdirectory's README index exactly once
+- [ ] Overview opens with Core Concepts and continues with Design Mainline when the status roll-up lists more than one top-level module; Core Concepts links the glossary and redefines no project term
+- [ ] A module document opens with Module in context, and a long one with Reading guide; a state machine has State at a Glance; each core flow has a Worked Example
+- [ ] Project terms are linked at first use, and non-obvious choices link their ADR at the sentence that relies on them
 - [ ] `scripts/check_documents.py` was run and exits 0

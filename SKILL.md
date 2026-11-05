@@ -126,10 +126,12 @@ Documentation paths and language are declared in `CLAUDE.md` under a fixed headi
 ## 5. Mechanical Check
 
 `scripts/check_documents.py` checks the structural half of this standard: section
-presence and order, file naming, index coverage, status vocabulary, diagram
-bodies, glossary columns and every entry's English counterpart, the process
-metadata a document never carries, and whether every `REF-<slug>` citation
-resolves to an entry of the project references file that is itself cited.
+presence and order, the Overview's Core Concepts and Design Mainline when the
+architecture rolls up more than one top-level module, file naming, index coverage,
+status vocabulary, diagram bodies, glossary columns and every entry's English
+counterpart, the process metadata a document never carries, and whether every
+`REF-<slug>` citation resolves to an entry of the project references file that
+is itself cited.
 It reads the paths and the language from the `## Documentation` block of
 section 1, skips a declared tree that does not exist, and treats a
 configuration under which no tree exists, or a value that is not a single
@@ -157,7 +159,13 @@ states an action rather than naming an artifact, whether a list is meant as
 a criterion or as an exhaustive set, whether a sentence that relies on an external
 source cites it, whether a cited source is one the reader would have attributed
 correctly unaided, whether a journey is a process the business actually runs, whether
-a status entry carries an explanation it should not, and
+a status entry carries an explanation it should not, whether a concept section
+states relationships rather than definitions beyond the second-glossary table
+guard, whether a module opening gives a real mental model, whether a worked example is
+concrete enough to follow, whether a reading guide matches the document, whether a
+state table's plain-language meanings are right, whether a project term is linked
+at first use, whether a rationale link sits at the first sentence that needs it,
+whether Design Mainline's mechanisms map to the sections it names, and
 whether a document still matches the code it asserts things about. It also does not render diagrams: it checks that a
 mermaid block has a type and a body, while the rendering rule in section 2 stays a
 step performed during the edit.
@@ -179,7 +187,8 @@ Each document type's standard adds its own checklist on top of this one.
 - [ ] Every normative sentence names what it binds, and its literal reading was applied to an ordinary member of that subject
 - [ ] A list that defines gives the criterion with examples; a list meant to be exhaustive says so
 - [ ] No history, no version, no author, no date, no TODO, no schedule
-- [ ] Content owned by another document is referenced by id, not restated
+- [ ] Content owned by another document is referenced by id, not restated, and the reference sits at the sentence that relies on it
+- [ ] A project term is linked to the glossary the first time the document uses it; the document does not restate its definition
 - [ ] Every diagram in the edited document was rendered and confirmed to succeed
 - [ ] Code references carry no line numbers
 - [ ] The document changed in the same commit as the code that changed what it asserts
