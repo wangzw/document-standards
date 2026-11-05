@@ -67,6 +67,8 @@ The high-level view of the whole system.
 - **Architecture invariants** — the rules the system must not violate, for example a strictly bottom-up dependency direction. These are what a review can actually adjudicate against, so each is stated so that a violation is recognizable.
 - **Implementation status** — one line per top-level module, linking to that module's own document (`modules/design-<slug>.md`, or `modules/<slug>/design-<slug>.md`). Roll-up only; the detail lives in the module document, and a module's sub-modules in its subdirectory's `README.md`. **A sub-module never appears here** — listing one here duplicates the roll-up its subdirectory already carries.
 
+**Incremental module documentation is supported.** A status row may link to a module document that has not been written yet: the architecture states the intended decomposition, and module documents are added and reviewed one at a time. The row names the eventual path; the design README index covers only documents that exist, and the checker does not require a status row's target to resolve.
+
 **Conditional sections** — include when the trigger holds, delete outright otherwise:
 - **Physical deployment architecture** — when the system runs as more than one process or replica.
 - **Inter-module call relationships** — when call chains are non-trivial.
