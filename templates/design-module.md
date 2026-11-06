@@ -10,8 +10,9 @@ The slug is lowercase kebab-case, matches the module's directory or package
 name in the code, and never changes.
 
 Module in context and Reading guide are prose before the fixed sections, not
-headings: the fixed order starts at Responsibilities. Keep Reading guide only
-when the document is long enough that it cannot be read linearly.
+headings: the fixed order starts at Core Concepts when the module needs one,
+and at Responsibilities otherwise. Keep Reading guide only when the document
+is long enough that it cannot be read linearly.
 -->
 
 # <Module name>
@@ -24,6 +25,15 @@ before the responsibility list.>
 linearly; delete otherwise. -->
 <Reading guide: which sections a first reader takes in order, which are
 reference, and whether the race cases are a final self-check.>
+
+<!-- Applicable only: keep when the module introduces a mechanism the reader
+must understand before the responsibility list. State what it is, what it is
+for, and why the system needs it; keep it short. Define no term here — terms
+belong to a glossary. Do not argue alternatives — those belong to an ADR,
+referenced by id. -->
+## Core Concepts
+
+<The mechanism the document is organized around, and why the system needs it.>
 
 ## Responsibilities
 

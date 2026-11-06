@@ -67,6 +67,7 @@ Documentation paths and language are declared in `CLAUDE.md` under a fixed headi
 - Mixed-language text is allowed only for universally recognized terms, for agreed terms **registered in the glossary that covers them** — the project glossary, or the local one of the context the document sits in — and for the name of a source registered in the project references file, which is a proper name. Nothing else.
 
 **Glossary.**
+- **A term is not a concept.** A term fixes what a word means in this project: the phrase, its English counterpart, and a definition that pins the meaning. A concept explains the design behind the thing: what it is, what it is for, and why the system needs it. A glossary entry answers "what does this word mean here"; a concept section answers "why does this thing exist". Neither substitutes for the other: a definition in a concept section is a glossary in the wrong place, and a term's definition belongs to the glossary alone.
 - **Registering a term is the exception, not the habit.** A word earns an entry only when the project has given it a meaning the reader would not arrive at unaided, and reading it the ordinary way changes what the document says. Universally recognized vocabulary stays out, and so does a word this project uses in its ordinary sense: an entry that tells the reader what they already knew adds maintenance and dilutes the entries that carry real meaning.
 - **The project glossary, at the configured `glossary` path, holds only the terms that hold project-wide** — the same meaning in every document, every document type and every part of the system. It is the one glossary every document shares, and it is mandatory once the documentation uses any term registered in it.
 - **A term whose meaning is bounded by a context does not go into the project glossary.** A word defined by one module, one document or one subsystem means something else, or nothing, elsewhere — and the project glossary is read from everywhere. Registering it there makes the contextual meaning look global, which is the more expensive mistake: it licenses the term's use in documents its definition was never meant to reach.
@@ -162,8 +163,9 @@ a criterion or as an exhaustive set, whether a sentence that relies on an extern
 source cites it, whether a cited source is one the reader would have attributed
 correctly unaided, whether a journey is a process the business actually runs, whether
 a status entry carries an explanation it should not, whether a concept section
-states relationships rather than definitions beyond the second-glossary table
-guard, whether a module opening gives a real mental model, whether a long module
+explains a mechanism rather than restating definitions or responsibilities,
+beyond the second-glossary table guard, whether a module opening gives a real
+mental model, whether a long module
 carries a Reading guide or a state machine carries State at a Glance, whether a
 worked example is concrete enough to follow, whether a reading guide's order
 matches the heading order and its section names resolve, whether a state table's

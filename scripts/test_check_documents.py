@@ -340,6 +340,27 @@ class DesignTreeTests(CheckerCase):
                          MODULE + "\n## Roadmap\n\nLater.\n"},
                         "not part of this document type's fixed section set")
 
+    def test_module_core_concepts_before_responsibilities(self):
+        with_concepts = MODULE.replace(
+            "## Responsibilities",
+            "## Core Concepts\n\nA seat is a declared position in the fixed "
+            "section order, needed so two documents can be read against each "
+            "other.\n\n## Responsibilities")
+        self.assert_green({"docs/design/modules/design-core.md": with_concepts})
+
+    def test_module_core_concepts_after_responsibilities_is_out_of_order(self):
+        self.assert_red({"docs/design/modules/design-core.md":
+                         MODULE + "\n## Core Concepts\n\nA late concept.\n"},
+                        "the section order is fixed")
+
+    def test_module_core_concepts_definition_table_is_rejected(self):
+        with_table = MODULE.replace(
+            "## Responsibilities",
+            "## Core Concepts\n\n| Concept | Definition |\n|---|---|\n"
+            "| seat | a declared position |\n\n## Responsibilities")
+        self.assert_red({"docs/design/modules/design-core.md": with_table},
+                        "definition table")
+
     def test_local_glossary_section_in_its_seat(self):
         glossary = """## Glossary
 
@@ -1126,6 +1147,22 @@ ZH_TWO_MODULE_FILES["docs/design/modules/design-host.md"] = (
 class ChineseTreeTests(CheckerCase):
     def test_conforming_chinese_tree_passes(self):
         self.assert_green(base=ZH_FILES)
+
+    def test_module_core_concepts_in_chinese_passes(self):
+        with_concepts = ZH_FILES["docs/design/modules/design-core.md"].replace(
+            "## 职责",
+            "## 核心概念\n\n座位是模块在固定章节顺序中声明的位置，"
+            "两份文档据此可以相互对读。\n\n## 职责")
+        self.assert_green({"docs/design/modules/design-core.md": with_concepts},
+                          base=ZH_FILES)
+
+    def test_module_core_concepts_chinese_definition_table_is_rejected(self):
+        with_table = ZH_FILES["docs/design/modules/design-core.md"].replace(
+            "## 职责",
+            "## 核心概念\n\n| 概念 | 定义 |\n|---|---|\n"
+            "| 座位 | 声明的位置 |\n\n## 职责")
+        self.assert_red({"docs/design/modules/design-core.md": with_table},
+                        "definition table", base=ZH_FILES)
 
     def test_chinese_two_modules_pass(self):
         self.assert_green(base=ZH_TWO_MODULE_FILES)

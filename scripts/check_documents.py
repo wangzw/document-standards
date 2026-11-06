@@ -182,6 +182,7 @@ DESIGN_MAINLINE_COLUMNS = [
 WORKED_EXAMPLE = names("Worked Example", "走查")
 STATE_AT_A_GLANCE = names("State at a Glance", "状态一览")
 MODULE_SECTIONS = [
+    ("core-concepts", CORE_CONCEPTS, False),
     ("responsibilities", names("Responsibilities", "职责"), True),
     ("glossary", names("Glossary", "术语表"), False),
     ("external-interface", names("External Interface Contract", "外部接口契约"), True),
@@ -1204,6 +1205,38 @@ def check_module_readability_sections(rel: str, sections: list[Section],
     return found
 
 
+def definition_table_findings(rel: str, section: Section,
+                              message: str) -> list[Finding]:
+    """A table in a concept section whose columns make it a glossary."""
+    found: list[Finding] = []
+    for (header_line, cells), _ in table_blocks(section.lines):
+        header_keys = {glossary_header_key(cell) for cell in cells}
+        normalized = {normalize_heading(cell) for cell in cells}
+        if "definition" in header_keys and (
+                "term" in header_keys or
+                "concept" in normalized or "概念" in normalized):
+            found.append(Finding(rel, header_line, message))
+    return found
+
+
+def check_module_core_concepts(rel: str, sections: list[Section],
+                               language: str) -> list[Finding]:
+    """A module's Core Concepts explains a mechanism; a definition table
+    there is a second glossary."""
+    found: list[Finding] = []
+    for section in sections:
+        if section.level != 2:
+            continue
+        key, _ = match_section(section.title, MODULE_SECTIONS, language)
+        if key != "core-concepts":
+            continue
+        found += definition_table_findings(
+            rel, section,
+            "Core Concepts carries a definition table; a module's "
+            "concepts are explained, and terms are defined in the glossary")
+    return found
+
+
 def check_module_document(rel: str, text: str, language: str) -> list[Finding]:
     """The fixed section set a module document obeys, wherever it lives --
     flat under modules/ or inside a module subdirectory."""
@@ -1212,6 +1245,7 @@ def check_module_document(rel: str, text: str, language: str) -> list[Finding]:
     found += check_heading_language(rel, text, language, MODULE_SECTIONS)
     found += check_section_order(rel, text, language, MODULE_SECTIONS)
     found += check_local_glossary(rel, text, language, MODULE_SECTIONS)
+    found += check_module_core_concepts(rel, sections, language)
     found += check_design_status(rel, sections, language, roll_up=False)
     found += check_module_readability_sections(rel, sections, language)
     responsibilities = [s for s in sections if s.level == 3
@@ -1271,15 +1305,10 @@ def check_core_concepts(rel_path: str, sections: list[Section], overview: Sectio
         if not any(lang.lower() == "mermaid" for _, lang, _ in core.fences()):
             found.append(Finding(rel_path, core.line,
                                  "Core Concepts carries no mermaid concept map"))
-        for (header_line, cells), _ in table_blocks(core.lines):
-            header_keys = {glossary_header_key(cell) for cell in cells}
-            normalized = {normalize_heading(cell) for cell in cells}
-            if "definition" in header_keys and (
-                    "term" in header_keys or
-                    "concept" in normalized or "概念" in normalized):
-                found.append(Finding(rel_path, header_line,
-                                     "Core Concepts carries a second glossary table; "
-                                     "definitions belong to the project glossary"))
+        found += definition_table_findings(
+            rel_path, core,
+            "Core Concepts carries a second glossary table; "
+            "definitions belong to the project glossary")
     return found
 
 

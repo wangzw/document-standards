@@ -80,21 +80,22 @@ Template: `templates/design-architecture.md`.
 
 Fixed section order, so modules can be read against each other and checked mechanically:
 
-1. **Responsibilities** — and, explicitly, **non-responsibilities**. Writing down what the module does not own is the cheapest available defence against scope creep. **Each responsibility states an action the module performs and the result or boundary it produces.** A bare noun phrase naming a table, a queue or an artifact is not a responsibility statement: it says what the module stores, not what it does, and the reader cannot tell which behaviour is in scope. Persisted artifacts belong to Core Data Structures; the responsibility that writes, reads, expires or otherwise acts on them belongs here.
-2. **Glossary** — optional, and rare. The terms this document gives a meaning of its own, each stated with the scope it applies to and with its English counterpart. A term that holds project-wide belongs to the project glossary instead, never to both.
-3. **External interface contract** — what other modules may call, and what stability is promised. This is the most valuable part of a module document.
-4. **Dependencies** — what it depends on, and whether the direction satisfies the architecture invariants. A public external component the citation rule in `SKILL.md` catches is cited here, at its first mention, so that nothing the module embeds reads as something it built.
-5. **UML diagrams** — structure and call relationships, selected per section 5.
-6. **Core data structures**.
-7. **Core algorithms and flows** — with complexity analysis for performance-sensitive algorithms. Procedural flows need no complexity analysis.
-8. **Error and failure semantics** — failure modes, retry, idempotency, degradation behaviour.
-9. **Concurrency and transaction boundaries** — when applicable.
-10. **Extension points** — when applicable.
-11. **Implementation status**.
+1. **Core Concepts** — optional, kept when the module introduces a mechanism the reader must understand before the responsibility list. It states, for that mechanism, what it is, what it is for, and why the system needs it. Keep it to the mechanism the document is organized around; the module's full scope belongs to Responsibilities. **It is not a glossary** — define no term there, link a project term to the project glossary at its first use, and answer "why does this exist", not "what does this word mean". **The rejected alternatives and the reasons one was chosen over another belong to an ADR**, referenced by id; restating them here makes the section a design log.
+2. **Responsibilities** — and, explicitly, **non-responsibilities**. Writing down what the module does not own is the cheapest available defence against scope creep. **Each responsibility states an action the module performs and the result or boundary it produces.** A bare noun phrase naming a table, a queue or an artifact is not a responsibility statement: it says what the module stores, not what it does, and the reader cannot tell which behaviour is in scope. Persisted artifacts belong to Core Data Structures; the responsibility that writes, reads, expires or otherwise acts on them belongs here.
+3. **Glossary** — optional, and rare. The terms this document gives a meaning of its own, each stated with the scope it applies to and with its English counterpart. A term that holds project-wide belongs to the project glossary instead, never to both.
+4. **External interface contract** — what other modules may call, and what stability is promised. This is the most valuable part of a module document.
+5. **Dependencies** — what it depends on, and whether the direction satisfies the architecture invariants. A public external component the citation rule in `SKILL.md` catches is cited here, at its first mention, so that nothing the module embeds reads as something it built.
+6. **UML diagrams** — structure and call relationships, selected per section 5.
+7. **Core data structures**.
+8. **Core algorithms and flows** — with complexity analysis for performance-sensitive algorithms. Procedural flows need no complexity analysis.
+9. **Error and failure semantics** — failure modes, retry, idempotency, degradation behaviour.
+10. **Concurrency and transaction boundaries** — when applicable.
+11. **Extension points** — when applicable.
+12. **Implementation status**.
 
-Within that order, two opening paragraphs and two H3s carry the reader's path:
+Two opening paragraphs and two H3s carry the reader's path:
 
-- **Module in context** — a short paragraph after the H1 and before `Responsibilities`. It states where the module sits in the system, what it owns, what it does not own, and the one-sentence mental model a reader should hold before the responsibility list. It is prose, not a new section.
+- **Module in context** — a short paragraph after the H1 and before `Core Concepts` and `Responsibilities`. It states where the module sits in the system, what it owns, what it does not own, and the one-sentence mental model a reader should hold before the responsibility list. It is prose, not a new section. **The mechanism the document is organized around is explained in Core Concepts, not here**; this paragraph only names it.
 - **Reading guide** — a short paragraph immediately after Module in context, kept only when the document is long enough that it cannot be read linearly. It states which sections a first reader takes in order, which are reference, and whether the race cases are a final self-check.
 - **Worked Example** — an H3 at the start of Core Algorithms and Flows, before the exhaustive tables, pointed to from the Reading guide (Chinese canonical heading: `走查`). For each core flow a reader must internalize, give one concrete trace: the initial state, the event or call sequence, and the persisted state after each step. A protocol sequence diagram shows message order; the worked example shows what the persisted state becomes.
 - **State at a Glance** — an H3 under Core Data Structures in a module with a state machine (Chinese canonical heading: `状态一览`). A table with `State | What it means | What is happening | Mental image` (Chinese canonical columns: `状态 | 一句话含义 | 当前动作 | 直觉画面`), in addition to the closed value set. The third column names the actor — the component itself or the entity it manages — and does not repeat the first column. Name the actor in the column header when it is the same for every row; repeat it per row only when the actor changes. One row per `state`; merge `substate` values into their parent row and explain them, unless the module treats them as first-class states. Keep the merged row to one sentence; when a state has many substates, list them after a colon with a short phrase each. Split them into separate rows only when they differ in the operator's action. The closed set answers which values exist; this table answers what each value means.
@@ -156,6 +157,7 @@ The common checklist in `SKILL.md` applies as well.
 - [ ] Every entry point appears in the tree's README index exactly once; every file appears in its module subdirectory's README index exactly once
 - [ ] Overview opens with Core Concepts and continues with Design Mainline when the status roll-up lists more than one top-level module; a short lead paragraph may precede Core Concepts and its absence is not a defect, a relationship table is allowed, and a definition table is refused
 - [ ] A module document opens with Module in context, and a long one with Reading guide; the Reading guide's order matches the heading order; Worked Example sits at the start of Core Algorithms and Flows; a state machine has State at a Glance
+- [ ] A module organized around a mechanism it introduces carries Core Concepts, stating what the mechanism is, what it is for and why the system needs it; it defines no term and argues no alternative
 - [ ] State at a Glance uses `Mental image` / `直觉画面`, names the actor in its third column without repeating the first column, and merges or explains substates with enough detail to read the row without the closed-set table
 - [ ] One glossary link at first use in the section is enough, and non-obvious choices link their ADR at the sentence that relies on them
 - [ ] `scripts/check_documents.py` was run and exits 0
