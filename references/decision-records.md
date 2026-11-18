@@ -60,7 +60,10 @@ Facts and constraints, not narrative. **DO NOT** write how the team came to look
 
 Each option, and what adopting it would have meant.
 
-- **Every rejected option states why it was rejected.** An option listed with no rejection reason is decoration — it makes the record look thorough while carrying no information, and it is the most common way this section degrades.
+- **Every option that lost carries a verdict and its reason.** The verdict is `Rejected` or `Not adopted` (Chinese canonical labels: `否决`, `未采纳`); the adopted option is marked `Adopted` (`采纳`). An option listed with no reason is decoration — it makes the record look thorough while carrying no information, and it is the most common way this section degrades.
+- **`Rejected` and `Not adopted` are different verdicts, and the difference is whether the option was judged wrong.** `Rejected` says it was: adopting it would break a constraint in *Context*, or it cannot coexist with the option adopted. `Not adopted` says it was not: the option is compatible with the one adopted and was left out because the decision does not need it at its present scope — it would add a component, a dependency or complexity that nothing in *Context* yet calls for. **Both halves must hold.** An option that conflicts with the adopted one is rejected however mild the objection to it; `Not adopted` is not a softer word for the same verdict, and it is not a way to avoid giving one.
+- **A not-adopted option states the constraint that kept it out, and may state that it can be added without displacing the decision.** That second sentence is a fact about compatibility, and it is what distinguishes the verdict from a rejection. **It is not a plan**: it names no stage, no milestone and no date, and it promises nothing. When the option should be taken up is written once, in *Invalidation Conditions*, as an observable condition; whether and when it is scheduled belongs to the roadmap, not to the record.
+- **`Not adopted` is a decision, not a deferral of one.** The record's decision is in force and the option is outside it. This is why the verdict does not conflict with the ban on undecided proposals in section 7: a proposal still under discussion has no verdict at all and does not appear.
 - **Options are the only place a displaced decision may appear.** It is an alternative that lost, stated as such; it is not a "previous decision" subsection and carries no revision narrative.
 - Options are described as they stand, not as a sequence of drafts. A better option found later is folded into this section with its rejection or adoption, not appended as an update.
 - **An option that adopts a public external component or follows a published design cites it** (`REF-<slug>`) at its first mention. A reader of the record has to be able to tell a candidate taken from outside from one designed in-house, and the option's name alone does not say which.
@@ -109,7 +112,8 @@ Template: `templates/adr-readme.md`.
 - Change history in any form: revision notes, dates, "originally", "previously", "updated", a changelog, a list of fixes
 - The design detail that follows from the decision (that is the design document's)
 - A displaced decision recorded as history rather than as a rejected option
-- Proposals that have not been decided
+- Proposals that have not been decided. An option marked `Not adopted` is not one: it has a verdict and a reason (section 4)
+- A schedule, a stage or a promise attached to a not-adopted option (`for now`, `in a later phase`, `will be added`)
 - A reference list or bibliography section (a source is cited in the sentence that relies on it)
 - TODO lists, schedules, owners
 
@@ -121,7 +125,8 @@ The common checklist in `SKILL.md` applies as well.
 - [ ] One decision in the record
 - [ ] File name is `adr-<slug>`, lowercase kebab-case, with no date and no sequence number; the slug names the decision and is unique
 - [ ] No status, state or acceptance field
-- [ ] Every rejected option states why it was rejected
+- [ ] Every option that lost carries a verdict, `Rejected` or `Not adopted`, and its reason
+- [ ] `Not adopted` is used only for an option that is compatible with the adopted one and was left out for scope; it carries no schedule and no promise, and the condition for taking it up is in Invalidation Conditions
 - [ ] Every option or context fact taken from a public external source is cited at its first mention
 - [ ] A displaced decision, if it appears at all, appears as a rejected option with no revision narrative
 - [ ] The decision is stated impersonally: `Adopt X`

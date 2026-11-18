@@ -25,9 +25,19 @@ problem came to attention.>
 ## Options Considered
 
 <!--
-Every rejected option states why it was rejected. An option listed with no
-rejection reason is decoration: it makes the record look thorough while
+Every option that lost carries a verdict and its reason. An option listed
+with no reason is decoration: it makes the record look thorough while
 carrying nothing a future reader can use.
+
+The verdict is Rejected or Not adopted (Chinese: 否决, 未采纳), and the two
+differ in whether the option was judged wrong. Rejected: adopting it would
+break a constraint, or it cannot coexist with the option adopted. Not
+adopted: it is compatible with the option adopted and was left out because
+the decision does not need it at its present scope. A not-adopted option
+states the constraint that kept it out and may say it can be added without
+displacing the decision; it names no stage and promises nothing. When it
+should be taken up goes in Invalidation Conditions, as an observable
+condition.
 
 This is the only place a displaced decision may appear: as an alternative that
 lost, with its rejection reason. No revision narrative.
@@ -47,7 +57,8 @@ candidate taken from outside from one designed in-house.
 
 <What adopting it would have meant.>
 
-**Rejected**: <why>
+**Not adopted**: <the constraint that kept it out>. <It is compatible with
+the option adopted and can be added without displacing this decision.>
 
 ### <Option C>
 

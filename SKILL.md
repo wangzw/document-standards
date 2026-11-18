@@ -154,8 +154,9 @@ silence the checker.
 
 **What it does not check** — and therefore what review still owns: subjective
 language, first and second person, restating transitions, valueless counts,
-whether a non-functional number is sourced, whether a rejected option's reason is
-real, whether a requirement is testable, whether a word deserves a glossary entry
+whether a non-functional number is sourced, whether a rejected or not-adopted option's reason is
+real, whether `Not adopted` was used for an option that is in fact incompatible
+with the adopted one, whether a requirement is testable, whether a word deserves a glossary entry
 at all and whether it belongs to the project glossary or to a local one, whether a
 normative sentence's literal scope is the one intended, whether a responsibility
 states an action rather than naming an artifact, whether a list is meant as
