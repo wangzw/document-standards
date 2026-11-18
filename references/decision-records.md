@@ -4,6 +4,8 @@ Read together with `SKILL.md`, whose common rules apply in full and are not repe
 
 **The premise for this document type**: the ADR tree records the decisions in force. Each record states one architecturally significant decision: the constraints that forced it, the options weighed, the one adopted, and the price accepted. It carries the reasoning behind the decision, not the project's work history.
 
+**The ADR tree is one half of the design documentation** (`SKILL.md`, section 3). The design tree states what the system is; the records state why. Work on the design documentation — writing it, changing it, reviewing it — includes the records, whether or not the request names them.
+
 This does not contradict the conclusions-only rule. What that rule bans is recording how a *document* was written; the options an ADR weighs are the **content of the decision**, not process residue. The line to hold: **an ADR is not meeting minutes and not a changelog.** It states what the options were and why each lost. It does not narrate how the discussion got there, who argued for what, or how the record itself has changed over time.
 
 ---
@@ -15,6 +17,7 @@ The failure mode of this document type is inflation: hundreds of records, none o
 **Required:**
 - A decision earns a record when it is **architecturally significant** — hard to reverse, or affecting module boundaries, public API, the data model, deployment shape, external dependencies or security posture.
 - A choice that can be reversed within a day gets no record.
+- **A choice implementation can make and reverse without consequence gets no record either.** The line is the one the design document draws for its own detail (design document standard, section 7), with reversibility added: a choice that makes no two modules disagree, that no reader needs in order to understand the system, and that an implementer could not plausibly build differently is settled in the code, and stays out of the record tree when it can also be undone within a day.
 - **One decision per record.** A record that needs many pages is several decisions that have not been separated.
 
 ## 2. A Record Is Revised in Place
@@ -28,7 +31,7 @@ The failure mode of this document type is inflation: hundreds of records, none o
 - **A replaced decision survives only as an option.** When the current decision displaces an earlier one, the earlier decision appears in *Options Considered* if it was a real alternative, with the reason it was rejected. It is not recorded as "what was decided before" and gets no separate paragraph. If it was not a real alternative, it is dropped.
 - **The reference check is the cost of this freedom.** Other documents cite the record, and code follows it. After revising, confirm that every citation still says something true — that a design document referencing `ADR-<slug>` has not been left asserting the option the record no longer takes.
 
-**This is why the ADR is a supplement to the design.** Both are revised on the same rhythm, in place, from the same authority: the current state of the system. Keeping a chain of successor records would put the two document types on different rules for no gain, and the ADR's value is its reasoning, which a fresh record does not preserve any better than a rewritten one.
+**This is what makes the ADR tree part of the design documentation, not an archive kept beside it.** Both trees are revised on the same rhythm, in place, from the same authority: the current state of the system. Keeping a chain of successor records would put the two document types on different rules for no gain, and the ADR's value is its reasoning, which a fresh record does not preserve any better than a rewritten one.
 
 ## 3. Layout and Naming
 
@@ -121,7 +124,7 @@ Template: `templates/adr-readme.md`.
 
 The common checklist in `SKILL.md` applies as well.
 
-- [ ] The decision is architecturally significant; a same-day-reversible choice got no record
+- [ ] The decision is architecturally significant; a same-day-reversible choice, or one implementation can make and reverse without consequence, got no record
 - [ ] One decision in the record
 - [ ] File name is `adr-<slug>`, lowercase kebab-case, with no date and no sequence number; the slug names the decision and is unique
 - [ ] No status, state or acceptance field

@@ -1,6 +1,6 @@
 ---
 name: document-standards
-description: Documentation standards for design documents, requirements documents and architecture decision records — path and language configuration, the rules common to every document type, and the entry point to each type's own standard. Load before creating or editing any document under the configured documentation paths. Use when writing or editing a design document, creating an architecture overview, documenting a module or adding one to the design docs, writing a requirements document, writing an architecture decision record, or reviewing documentation.
+description: Documentation standards for the design documentation (design documents together with the architecture decision records that are part of it) and for requirements documents — path and language configuration, the rules common to every document type, and the entry point to each type's own standard. Load before creating or editing any document under the configured documentation paths. Use when writing or editing a design document, creating an architecture overview, documenting a module or adding one to the design docs, writing a requirements document, writing an architecture decision record, or reviewing documentation.
 ---
 
 # Document Standards
@@ -121,6 +121,12 @@ Documentation paths and language are declared in `CLAUDE.md` under a fixed headi
 | Requirements | `docs/prd` | [Requirements Documents](references/requirements-documents.md) |
 | ADR | `docs/adr` | [Decision Records](references/decision-records.md) |
 
+**The design documentation is the design tree and the ADR tree together.** The design tree states what the system is; the ADR tree states why it is that and not something else. Neither is complete alone, and the two are one deliverable kept in two trees because they carry different halves.
+
+- **Whatever is said of the design documentation covers both trees**: a request to write it, to update it or to review it, and a rule that binds it. Writing a design that rests on an architecturally significant decision includes writing that decision's record; changing a decision changes the record and every design document that relies on it; reviewing a design includes reviewing the records it cites.
+- **A request is read the wide way.** Asked for `the design document` or `设计文档` of a system or a feature, with no tree named, the work covers the design documentation.
+- **This standard keeps three names apart**: `design document` names a document of the design tree, `ADR` or `record` names one of the ADR tree, and `design documentation` names both. The narrow names exist so that a rule can say which tree it binds; they do not make the ADR tree optional.
+
 ## 4. Templates
 
 `templates/` holds the starting point for each document type. They carry the mandatory section order; delete the sections that do not apply rather than leaving them empty. `templates/glossary.md` and `templates/references.md` are the starting points for the two files every document type shares.
@@ -163,7 +169,12 @@ states an action rather than naming an artifact, whether a list is meant as
 a criterion or as an exhaustive set, whether a sentence that relies on an external
 source cites it, whether a cited source is one the reader would have attributed
 correctly unaided, whether a journey is a process the business actually runs, whether
-a status entry carries an explanation it should not, whether a concept section
+a status entry carries an explanation it should not, whether a design document
+carries detail that implementation could have settled or omits an algorithm or
+flow that is hard to follow even when it is internal to one module, whether a
+record was written for a choice implementation could have made and reversed
+without consequence, whether every architecturally significant decision the
+design rests on has its ADR, whether a concept section
 explains a mechanism rather than restating definitions or responsibilities,
 beyond the second-glossary table guard, whether a module opening gives a real
 mental model, whether a long module

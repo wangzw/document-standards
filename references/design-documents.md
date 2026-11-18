@@ -2,9 +2,11 @@
 
 Read together with `SKILL.md`, whose common rules apply in full and are not repeated here.
 
-**The premise for this document type**: a design document is the *final design conclusion*, not a design log. Alternatives considered, the choice made and the reasoning behind it belong to the ADR; the design document carries only the reference.
+**The premise for this document type**: a design document is the *final design conclusion*, not a design log. Alternatives considered, the choice made and the reasoning behind it belong to the ADR; the design document carries only the reference. The design tree and the ADR tree together are the design documentation (`SKILL.md`, section 3): a design is not finished while a decision it rests on has no record.
 
-**The reader this standard writes for**: a senior engineer who has not read the code. A design document must let that reader build the mental model before the exhaustive rules, without becoming a second-person tutorial and without recording the design process. The Overview and the module's opening carry that model; the fixed sections that follow are the reference a reviewer uses to verify it.
+**The readers this standard writes for**: a senior engineer who has not read the code, and the implementer of a module, often an agent building it in parallel with the implementers of other modules. The senior engineer reads to understand how the system works; the implementer reads the document as the guide that keeps the implementation from departing from the design. A design document must let the senior engineer build the mental model before the exhaustive rules, without becoming a second-person tutorial and without recording the design process. The Overview and the module's opening carry that model; the fixed sections that follow are the reference a reviewer uses to verify it.
+
+**Both readers set the depth.** What neither needs, because implementation can settle it without harm, is left to implementation (section 7).
 
 ---
 
@@ -86,9 +88,9 @@ Fixed section order, so modules can be read against each other and checked mecha
 4. **External interface contract** — what other modules may call, and what stability is promised. This is the most valuable part of a module document.
 5. **Dependencies** — what it depends on, and whether the direction satisfies the architecture invariants. A public external component the citation rule in `SKILL.md` catches is cited here, at its first mention, so that nothing the module embeds reads as something it built.
 6. **UML diagrams** — structure and call relationships, selected per section 5.
-7. **Core data structures**.
-8. **Core algorithms and flows** — with complexity analysis for performance-sensitive algorithms. Procedural flows need no complexity analysis.
-9. **Error and failure semantics** — failure modes, retry, idempotency, degradation behaviour.
+7. **Core data structures** — the structures other modules see, the persistent formats something outside the module reads, and the ones a reader must know to follow the module's algorithms and invariants. A structure that neither another module nor the reader's understanding needs is left to the code (section 7).
+8. **Core algorithms and flows** — with complexity analysis for performance-sensitive algorithms. Procedural flows need no complexity analysis. An algorithm or flow earns its place by being hard to understand or easy to build wrong, and being internal to the module does not excuse it; a flow any implementer would write the same way from the interface contract is omitted (section 7).
+9. **Error and failure semantics** — the failure modes a caller observes, retry, idempotency, degradation behaviour. The identifiers of errors that never leave the module are not listed (section 7).
 10. **Concurrency and transaction boundaries** — when applicable.
 11. **Extension points** — when applicable.
 12. **Implementation status**.
@@ -126,8 +128,25 @@ The fastest-rotting content in any design document, and therefore the most tight
 
 `Partially implemented` exists here and **does not exist in a requirements document**. The two document types look at the system from different places: a design document is the implementation view, where partial implementation is a real and informative state; a requirements document is the outside view, where it is not.
 
-## 7. What Never Appears in a Design Document
+## 7. Level of Detail
 
+A design document is written to the depth its two readers need and no deeper. Every sentence in it is an assertion that must keep matching the code (`SKILL.md`, Timeliness), so detail nobody needs is not free: it buries the mechanism the reader came for, and it is the first content to stop being true.
+
+**Required:**
+- **What implementation can decide is left to implementation.** The test, applied to each piece of content: **if this were decided only when the code is written, what would go wrong?** The content stays when one of the two answers below holds, and is left out when neither does.
+  - *Consistency.* Something outside the module has to agree on it. Modules are implemented in parallel, each from its own document, and a shared fact the documents omit is decided once per implementer, differently each time. A module's external interface is the paradigm case.
+  - *Understanding.* Without it a reader cannot work out how the system works, or an implementer could plausibly build something else: an algorithm that is hard to follow, a flow whose order matters for a reason the code does not show, an invariant, a concurrency or transaction boundary.
+- **Being internal to one module is not the test, in either direction.** A complex algorithm used by nothing outside its module is documented, because the second answer holds. An error identifier used only inside one module is not, because neither does: choosing it during implementation makes no two modules disagree and misleads no reader.
+- **The examples illustrate the test; they do not replace it.** Typically kept: interfaces other modules call, data formats other components read, the failure modes a caller must tell apart, the algorithms and flows a reader would not reconstruct unaided. Typically left out: module-internal error identifiers, the names and signatures of private helpers, the layout of structures no other module sees and no reader needs in order to follow the module's algorithms. A case on neither list is decided by the test.
+- **What is left out is decided in the code, and the code is its only record.** The document carries no placeholder for it and no note that it is deferred.
+- **A detail that turns out to be shared moves in.** When implementation finds that a choice left open needs agreement across modules, or that a flow is harder than the document assumed, the design document gains it in the same commit.
+- **A fixed section is not a quota.** The section order in section 4 says where content goes, not how much of it there must be. Each section holds what passes the test, and an applicable-only section in which nothing passes is deleted.
+
+The ADR tree applies the same test to decisions with one addition: a decision that implementation can make and reverse without consequence earns no record (decision record standard, section 1).
+
+## 8. What Never Appears in a Design Document
+
+- Detail that implementation can settle without two modules disagreeing, without leaving a reader unable to work out how the system works, and without an implementer plausibly building something else (section 7)
 - Change history, version numbers, authors, dates, review records
 - TODO lists, schedules, milestones, owners
 - Requirement content (reference the requirement id instead)
@@ -137,10 +156,13 @@ The fastest-rotting content in any design document, and therefore the most tight
 - A reference list or bibliography section (a source is cited in the sentence that relies on it)
 - Narrative about how the design evolved
 
-## 8. Checklist
+## 9. Checklist
 
 The common checklist in `SKILL.md` applies as well.
 
+- [ ] Every piece of detail passes the test in section 7: left to implementation, it would make modules disagree, or leave a reader unable to work out how the system works, or let an implementer plausibly build something else. Module-internal detail that passes none of these is absent
+- [ ] An algorithm or flow that is hard to follow is documented even when nothing outside the module uses it
+- [ ] Every architecturally significant decision the design rests on has its ADR, written or revised in the same piece of work
 - [ ] File name matches `design-<slug>`, with no sequence number; the slug matches the module's name in the code
 - [ ] A module whose sub-modules have their own documents lives in a `modules/<slug>/` subdirectory, with its own `design-<slug>.md` and a `README.md`
 - [ ] No alternatives or rationale — ADR referenced by id instead

@@ -1,5 +1,5 @@
 <!--
-Template for the design documentation entry point. Delete every comment
+Template for the design tree entry point. Delete every comment
 block before committing.
 
 The introduction says what the system is and what it is for. It does NOT

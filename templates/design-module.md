@@ -13,6 +13,15 @@ Module in context and Reading guide are prose before the fixed sections, not
 headings: the fixed order starts at Core Concepts when the module needs one,
 and at Responsibilities otherwise. Keep Reading guide only when the document
 is long enough that it cannot be read linearly.
+
+Level of detail: write what a reader needs to understand the module and what
+an implementer needs to stay on the design. Ask of each piece of content what
+would go wrong if it were decided only when the code is written. Keep it when
+something outside the module has to agree on it, when a reader could not work
+out how the module works without it, or when an implementer could plausibly
+build it differently. Leave the rest to the code: module-internal error
+identifiers, private helpers, and structures that neither another module nor
+the reader's understanding needs. A section is not a quota.
 -->
 
 # <Module name>
@@ -120,6 +129,10 @@ value means in operation.>
 <!--
 Complexity analysis is required for performance-sensitive algorithms and is
 not required for procedural flows.
+
+An algorithm or flow belongs here when it is hard to understand or easy to
+build wrong, even if nothing outside the module uses it. A flow any
+implementer would write the same way from the interface contract is omitted.
 -->
 
 <!-- Applicable only: delete when the module has no core flow a reader must internalize.
@@ -133,7 +146,9 @@ shows message order; this trace shows what the persisted state becomes.>
 <!-- Applicable only: delete when the module has no non-trivial failure behaviour. -->
 ## Error and Failure Semantics
 
-<Failure modes, retry behaviour, idempotency, degradation.>
+<The failure modes a caller observes, retry behaviour, idempotency,
+degradation. Identifiers of errors that never leave the module are not
+listed.>
 
 <!-- Applicable only. -->
 ## Concurrency and Transaction Boundaries
